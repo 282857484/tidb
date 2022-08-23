@@ -19,6 +19,7 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/pingcap/log"
 	"github.com/pingcap/tidb/ddl/placement"
 	"github.com/pingcap/tidb/meta/autoid"
 	"github.com/pingcap/tidb/parser/model"
@@ -27,6 +28,7 @@ import (
 	"github.com/pingcap/tidb/table"
 	"github.com/pingcap/tidb/util"
 	"github.com/pingcap/tidb/util/mock"
+	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )
 
@@ -173,6 +175,9 @@ func (is *infoSchema) SchemaExists(schema model.CIStr) bool {
 }
 
 func (is *infoSchema) TableByName(schema, table model.CIStr) (t table.Table, err error) {
+	if table.L == "v1" || table.L == "v2" {
+		log.Info("wwz TableByName", zap.String("table", table.String()))
+	}
 	if tbNames, ok := is.schemaMap[schema.L]; ok {
 		if t, ok = tbNames.tables[table.L]; ok {
 			return
@@ -426,6 +431,9 @@ func NewLocalTemporaryTables() *LocalTemporaryTables {
 
 // TableByName get table by name
 func (is *LocalTemporaryTables) TableByName(schema, table model.CIStr) (table.Table, bool) {
+	if table.L == "v1" || table.L == "v2" {
+		log.Info("wwz TableByName", zap.String("table", table.String()))
+	}
 	if tbNames, ok := is.schemaMap[schema.L]; ok {
 		if t, ok := tbNames.tables[table.L]; ok {
 			return t, true
@@ -539,6 +547,9 @@ type TemporaryTableAttachedInfoSchema struct {
 
 // TableByName implements InfoSchema.TableByName
 func (ts *TemporaryTableAttachedInfoSchema) TableByName(schema, table model.CIStr) (table.Table, error) {
+	if table.L == "v1" || table.L == "v2" {
+		log.Info("wwz TableByName", zap.String("table", table.String()))
+	}
 	if tbl, ok := ts.LocalTemporaryTables.TableByName(schema, table); ok {
 		return tbl, nil
 	}
